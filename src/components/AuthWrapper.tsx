@@ -1,10 +1,11 @@
 import { AlertCircle, LockIcon, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useMemo } from 'react';
+
+import { useAuth } from '@/hooks/use-auth'; // Annahme: Der richtige Import-Pfad
 
 import { LoadingSpinner } from './common/loading-spinner';
-import { useAuth } from './providers/AuthProvider';
 import { Button } from './ui/button';
 
 interface AuthWrapperProps {
@@ -33,7 +34,16 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({
   showLoginButton = true,
 }) => {
   const router = useRouter();
-  const { user, isLoading, isAdmin, isArtist } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  // Berechnen der Rollen-Flags basierend auf den Benutzerdaten
+  const isAdmin = useMemo(() => {
+    return user?.role === 'admin';
+  }, [user]);
+
+  const isArtist = useMemo(() => {
+    return user?.role === 'artist' || user?.role === 'admin';
+  }, [user]);
 
   // Show loading spinner while checking auth
   if (isLoading) {

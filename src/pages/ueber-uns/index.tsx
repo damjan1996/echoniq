@@ -7,7 +7,13 @@ import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
 import { Container } from '@/components/ui/container';
 
-import { Hero, Mission, TeamMembers, LabelHistory, Vision } from './components';
+import {
+  Hero,
+  Mission,
+  TeamMembers,
+  LabelHistory,
+  Vision,
+} from '../../components/ueber-uns/components';
 
 const UeberUnsPage: NextPage = () => {
   return (

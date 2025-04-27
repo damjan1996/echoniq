@@ -1,10 +1,12 @@
-// src/components/providers/AuthProvider.tsx
-import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+// src/hooks/use-auth.ts
+// Authentication hook without JSX
+
+import { useState, useEffect, useMemo } from 'react';
 
 import apiClient from '@/lib/api-client';
 
 // Types
-interface User {
+export interface User {
   id: string;
   email: string;
   role?: string;
@@ -15,7 +17,7 @@ interface AuthError {
   message: string;
 }
 
-interface AuthContextType {
+interface AuthResponse {
   user: User | null;
   isLoading: boolean;
   isAdmin: boolean;
@@ -26,32 +28,31 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
 }
 
-// Create context
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+/**
+ * Hilfsfunction zum sicheren Umwandeln der API-User-Antwort in unser User-Interface
+ */
+const convertToUser = (apiUser: any): User | null => {
+  if (!apiUser) return null;
 
-// Provider component props
-interface AuthProviderProps {
-  children: ReactNode;
-}
+  return {
+    id: String(apiUser.id || ''),
+    email: String(apiUser.email || ''),
+    role: apiUser.role ? String(apiUser.role) : undefined,
+    name: apiUser.name ? String(apiUser.name) : undefined,
+  };
+};
 
-// Provider component
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+/**
+ * Hook for authentication
+ * This is a simplified version that uses localStorage instead of Supabase
+ */
+export function useAuth(): AuthResponse {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const isAdmin = Boolean(user?.role === 'admin');
-  const isArtist = Boolean(user?.role === 'artist' || user?.role === 'admin');
 
-  // Hilfsfunction zum sicheren Umwandeln der API-User-Antwort in unser User-Interface
-  const convertToUser = (apiUser: any): User | null => {
-    if (!apiUser) return null;
-
-    return {
-      id: String(apiUser.id || ''),
-      email: String(apiUser.email || ''),
-      role: apiUser.role ? String(apiUser.role) : undefined,
-      name: apiUser.name ? String(apiUser.name) : undefined,
-    };
-  };
+  // Berechnete Eigenschaften für Admin- und Künstlerrollen
+  const isAdmin = useMemo(() => user?.role === 'admin', [user?.role]);
+  const isArtist = useMemo(() => user?.role === 'artist' || user?.role === 'admin', [user?.role]);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -141,7 +142,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error: null };
   };
 
-  const value = {
+  return {
     user,
     isLoading,
     isAdmin,
@@ -151,19 +152,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signOut,
     resetPassword,
   };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-// Hook to use auth
-export function useAuth() {
-  const context = useContext(AuthContext);
-
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-
-  return context;
 }
 
 export default useAuth;

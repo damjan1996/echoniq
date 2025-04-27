@@ -1,7 +1,9 @@
-import { BlogPostWithAuthor } from '@/lib/supabase/types';
-// Removed unused import: SupabaseBlogCategory
-
 import { Image, SEO, SocialLinks } from './common';
+
+// Definieren wir den BlogPostWithAuthor-Typ hier, da das Modul nicht gefunden werden kann
+export interface BlogPostWithAuthor extends BlogPost {
+  author: BlogAuthor;
+}
 
 export interface BlogPost {
   id: string;

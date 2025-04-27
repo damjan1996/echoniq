@@ -9,17 +9,18 @@ import { useEffect } from 'react';
 
 // Components
 import { ArtistBio } from '@/components/artists/ArtistBio';
-import { ArtistReleases, ReleaseWithTracks } from '@/components/artists/ArtistReleases';
+import { ArtistReleases } from '@/components/artists/ArtistReleases';
 import CTA from '@/components/common/cta-button';
 import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { SectionTitle } from '@/components/common/section-title';
 // Lib and utils
 import { trackArtistView } from '@/lib/analytics';
+import { getServerArtistBySlug, getServerArtists } from '@/lib/server';
 import { generateArtistOpenGraphMetadata } from '@/lib/social/meta';
 import { getArtistShareMetadata, getShareButtons } from '@/lib/social/share';
-import { getServerArtistBySlug, getServerArtists } from '@/lib/supabase/server';
-import type { ArtistWithReleases } from '@/lib/supabase/types';
 import { cn } from '@/lib/utils';
+// Database types
+import { ArtistWithReleases } from '@/types/database';
 
 interface ArtistDetailPageProps {
   artist: ArtistWithReleases;
@@ -162,27 +163,32 @@ export default function ArtistDetailPage({ artist }: ArtistDetailPageProps) {
     );
   }
 
+  // Hier werden wir sicherstellen, dass alle Social Links als "string | null" typisiert sind
   const socialLinks = [
-    { name: 'Instagram', url: artist.instagram, icon: 'instagram' },
-    { name: 'Facebook', url: artist.facebook, icon: 'facebook' },
-    { name: 'Twitter', url: artist.twitter, icon: 'twitter' },
-    { name: 'SoundCloud', url: artist.soundcloud, icon: 'soundcloud' },
-    { name: 'Spotify', url: artist.spotify, icon: 'spotify' },
-    { name: 'Bandcamp', url: artist.bandcamp, icon: 'bandcamp' },
-    { name: 'YouTube', url: artist.youtube, icon: 'youtube' },
+    { name: 'Instagram', url: artist.instagram || null, icon: 'instagram' },
+    { name: 'Facebook', url: artist.facebook || null, icon: 'facebook' },
+    { name: 'Twitter', url: artist.twitter || null, icon: 'twitter' },
+    { name: 'SoundCloud', url: artist.soundcloud || null, icon: 'soundcloud' },
+    { name: 'Spotify', url: artist.spotify || null, icon: 'spotify' },
+    { name: 'Bandcamp', url: artist.bandcamp || null, icon: 'bandcamp' },
+    { name: 'YouTube', url: artist.youtube || null, icon: 'youtube' },
   ].filter((link) => link.url);
+
+  // Stelle sicher, dass bio und profileImage nie undefined sind
+  const artistBio = artist.bio || '';
+  const artistProfileImage = artist.profile_image || '';
 
   const openGraph = generateArtistOpenGraphMetadata({
     name: artist.name,
-    bio: artist.bio || undefined,
-    profileImage: artist.profile_image || undefined,
+    bio: artistBio,
+    profileImage: artistProfileImage,
     slug: artist.slug,
   });
 
   const shareData = getArtistShareMetadata({
     name: artist.name,
-    bio: artist.bio || undefined,
-    profileImage: artist.profile_image || undefined,
+    bio: artistBio,
+    profileImage: artistProfileImage,
     slug: artist.slug,
   });
 
@@ -303,7 +309,7 @@ export default function ArtistDetailPage({ artist }: ArtistDetailPageProps) {
                   {shareButtons.map((button) => (
                     <a
                       key={button.name}
-                      href={button.url || undefined}
+                      href={button.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-3 bg-gray-900 rounded-full hover:bg-gray-800 transition-colors"
@@ -344,14 +350,7 @@ export default function ArtistDetailPage({ artist }: ArtistDetailPageProps) {
               {artist.releases && artist.releases.length > 0 && (
                 <div className="mb-12">
                   <SectionTitle title="Latest Releases" />
-                  {/*
-                   * Expliziter Typ-Cast zu ReleaseWithTracks[], da wir wissen, dass die Releases
-                   * vom Supabase API kommen und dem ReleaseWithTracks-Format entsprechen
-                   */}
-                  <ArtistReleases
-                    artistName={artist.name}
-                    releases={artist.releases as ReleaseWithTracks[]}
-                  />
+                  <ArtistReleases artistName={artist.name} releases={artist.releases} />
                 </div>
               )}
 
@@ -359,12 +358,12 @@ export default function ArtistDetailPage({ artist }: ArtistDetailPageProps) {
                 <div className="mb-12">
                   <SectionTitle title="Listen On" />
                   <SimpleStreamingLinks
-                    spotify={artist.spotify}
+                    spotify={artist.spotify || null}
                     appleMusic={null}
-                    soundcloud={artist.soundcloud}
-                    bandcamp={artist.bandcamp}
+                    soundcloud={artist.soundcloud || null}
+                    bandcamp={artist.bandcamp || null}
                     beatport={null}
-                    youtube={artist.youtube}
+                    youtube={artist.youtube || null}
                   />
                 </div>
               )}

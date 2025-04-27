@@ -115,6 +115,45 @@ const nextConfig = {
     experimental: {
         // Server Actions sind standardmäßig verfügbar, Option entfernt
     },
+
+    // Diese Pfade aus dem Export ausschließen
+    exportPathMap: async function(
+      defaultPathMap,
+      { dev, dir, outDir, distDir, buildId }
+    ) {
+        if (dev) {
+            return defaultPathMap;
+        }
+
+        const paths = { ...defaultPathMap };
+
+        // Entferne problematische Komponenten-Pfade
+        const pathsToExclude = [
+            '/blog/components',
+            '/blog/components/Categories',
+            '/blog/components/PostCard',
+            '/blog/post',
+            '/blog/post/PostSidebar',
+            '/blog/post/editors/PostMetaEditor',
+            '/music/components/ReleaseList',
+            '/artists/components/Categories',
+            '/home/components',
+            '/kontakt/components',
+            '/music/components',
+            '/studio/components',
+            '/ueber-uns/components',
+            '/artists/components'
+        ];
+
+        // Alle problematischen Pfade entfernen
+        for (const path of pathsToExclude) {
+            if (paths[path]) delete paths[path];
+            if (paths[`/de${path}`]) delete paths[`/de${path}`];
+            if (paths[`/en${path}`]) delete paths[`/en${path}`];
+        }
+
+        return paths;
+    },
 };
 
 module.exports = nextConfig;

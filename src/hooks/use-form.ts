@@ -1,114 +1,171 @@
 // src/hooks/use-form.ts
-import { useState, FormEvent, ChangeEvent } from 'react';
-
-// Fix the import path to use the absolute path with Next.js @ alias
-// Change from './analytics/index' to '@/lib/analytics/index'
-export {
-  trackSongPlay,
-  trackAlbumView,
-  trackArtistView,
-  trackStudioBooking,
-  useAnalytics,
-} from '@/lib/analytics/index';
-
-// Export types using 'export type'
-export type { SongData, AlbumData, ArtistData } from '@/lib/analytics/index';
-
-// Define a more generic FormValues type to support different form data structures
-export type FormValues = Record<string, string | number | boolean | null | undefined>;
+import { useState, ChangeEvent, FormEvent } from 'react';
 
 interface ValidationRule {
   required?: boolean;
   pattern?: RegExp;
   minLength?: number;
   maxLength?: number;
+  validate?: (value: unknown) => boolean | string;
 }
 
-interface UseFormOptions {
-  defaultValues: Record<string, unknown>;
-  validationRules?: Record<string, ValidationRule>;
+interface FormState<T> {
+  values: T;
+  errors: Record<keyof T, string | null>;
+  touched: Record<keyof T, boolean>;
+  isSubmitting: boolean;
+  isValid: boolean;
 }
 
-// Simplified useForm hook without generics to avoid TypeScript issues
-export function useForm({ defaultValues, validationRules = {} }: UseFormOptions) {
-  const [values, setValues] = useState<Record<string, unknown>>(defaultValues);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+interface UseFormProps<T extends Record<string, unknown>> {
+  defaultValues: T;
+  validationRules?: Partial<Record<keyof T, ValidationRule>>;
+}
 
-  // This function will mimic the behavior of the register function from react-hook-form
-  const register = (name: string) => {
-    return {
-      name,
-      value: values[name],
-      onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const newValues = { ...values };
+export function useForm<T extends Record<string, unknown>>({
+  defaultValues,
+  validationRules = {},
+}: UseFormProps<T>) {
+  const [formState, setFormState] = useState<FormState<T>>({
+    values: defaultValues,
+    errors: {} as Record<keyof T, string | null>,
+    touched: {} as Record<keyof T, boolean>,
+    isSubmitting: false,
+    isValid: true,
+  });
 
-        // Handle different input types specifically for inputs
-        if (e.target instanceof HTMLInputElement && e.target.type === 'checkbox') {
-          newValues[name] = e.target.checked;
-        } else {
-          newValues[name] = e.target.value;
-        }
+  // Validate a single field
+  const validateField = (name: keyof T, value: unknown): string | null => {
+    const rules = validationRules[name];
 
-        setValues(newValues);
-      },
-      id: name,
-    };
-  };
+    if (!rules) return null;
 
-  const validateForm = (): Record<string, string> => {
-    const newErrors: Record<string, string> = {};
-
-    for (const field in validationRules) {
-      const value = values[field];
-      const rules = validationRules[field];
-
-      if (rules.required && (!value || value === '')) {
-        newErrors[field] = 'This field is required';
-      } else if (rules.pattern && value && !rules.pattern.test(String(value))) {
-        newErrors[field] = 'Invalid format';
-      } else if (rules.minLength && typeof value === 'string' && value.length < rules.minLength) {
-        newErrors[field] = `Minimum length is ${rules.minLength}`;
-      } else if (rules.maxLength && typeof value === 'string' && value.length > rules.maxLength) {
-        newErrors[field] = `Maximum length is ${rules.maxLength}`;
-      }
+    if (rules.required && (!value || (Array.isArray(value) && value.length === 0))) {
+      return 'This field is required';
     }
 
-    return newErrors;
+    if (rules.pattern && value && typeof value === 'string' && !rules.pattern.test(value)) {
+      return 'Invalid format';
+    }
+
+    if (rules.minLength && typeof value === 'string' && value.length < rules.minLength) {
+      return `Minimum length is ${rules.minLength}`;
+    }
+
+    if (rules.maxLength && typeof value === 'string' && value.length > rules.maxLength) {
+      return `Maximum length is ${rules.maxLength}`;
+    }
+
+    if (rules.validate && typeof rules.validate === 'function') {
+      const result = rules.validate(value);
+      if (typeof result === 'string') return result;
+      if (result === false) return 'Invalid value';
+    }
+
+    return null;
   };
 
-  // Simplified without explicit generics
-  const handleSubmit = (onSubmit: (data: unknown) => void | Promise<void>) => {
+  // Validate all fields
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string | null> = {};
+    let isValid = true;
+
+    Object.keys(validationRules).forEach((key) => {
+      const fieldName = key as keyof T;
+      const error = validateField(fieldName, formState.values[fieldName]);
+      newErrors[key] = error;
+      if (error) isValid = false;
+    });
+
+    setFormState((prev) => ({
+      ...prev,
+      errors: newErrors as Record<keyof T, string | null>,
+      isValid,
+    }));
+
+    return isValid;
+  };
+
+  // Register a field
+  const register = (name: keyof T) => {
+    return {
+      name,
+      value: formState.values[name],
+      onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const target = e.target;
+        const value =
+          target.type === 'checkbox' ? (target as HTMLInputElement).checked : target.value;
+
+        setFormState((prev) => ({
+          ...prev,
+          values: {
+            ...prev.values,
+            [name]: value,
+          },
+          errors: {
+            ...prev.errors,
+            [name]: validateField(name, value),
+          },
+        }));
+      },
+      onBlur: () => {
+        setFormState((prev) => ({
+          ...prev,
+          touched: {
+            ...prev.touched,
+            [name]: true,
+          },
+          errors: {
+            ...prev.errors,
+            [name]: validateField(name, prev.values[name]),
+          },
+        }));
+      },
+    };
+  };
+
+  // Handle form submission
+  const handleSubmit = (onSubmit: (data: T) => void | Promise<void>) => {
     return (e: FormEvent) => {
-      e.preventDefault();
+      if (e) e.preventDefault();
 
-      const formErrors = validateForm();
-      setErrors(formErrors);
+      setFormState((prev) => ({ ...prev, isSubmitting: true }));
 
-      if (Object.keys(formErrors).length === 0) {
-        setIsSubmitting(true);
-        try {
-          onSubmit(values);
-        } finally {
-          setIsSubmitting(false);
-        }
+      const isValid = validateForm();
+
+      if (isValid) {
+        Promise.resolve(onSubmit(formState.values)).finally(() => {
+          setFormState((prev) => ({ ...prev, isSubmitting: false }));
+        });
+      } else {
+        setFormState((prev) => ({ ...prev, isSubmitting: false }));
       }
     };
   };
 
-  const reset = () => {
-    setValues(defaultValues);
-    setErrors({});
+  // Reset form to default values
+  const reset = (newValues: T = defaultValues) => {
+    setFormState({
+      values: newValues,
+      errors: {} as Record<keyof T, string | null>,
+      touched: {} as Record<keyof T, boolean>,
+      isSubmitting: false,
+      isValid: true,
+    });
   };
 
   return {
     register,
     handleSubmit,
     reset,
-    values,
     formState: {
-      errors,
-      isSubmitting,
+      errors: formState.errors,
+      touched: formState.touched,
+      isSubmitting: formState.isSubmitting,
+      isValid: formState.isValid,
     },
+    values: formState.values,
   };
 }
+
+export default useForm;

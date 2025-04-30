@@ -1,42 +1,30 @@
-import { motion } from 'framer-motion';
-import React, { ReactNode } from 'react';
-import { useInView } from 'react-intersection-observer';
+"use client"
 
-// TypeScript interface for Container props
-interface ContainerProps {
-  children: ReactNode;
-  className?: string;
-  [key: string]: unknown; // Better type than 'any'
-}
-
-// Fallback Container component if the original can't be found
-const Container: React.FC<ContainerProps> = ({ children, className = '', ...props }) => (
-  <div className={`container mx-auto px-4 ${className}`} {...props}>
-    {children}
-  </div>
-);
+import { motion } from "framer-motion"
+import type React from "react"
+import { useInView } from "react-intersection-observer"
 
 type BenefitProps = {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-};
+  title: string
+  description: string
+  icon: React.ReactNode
+}
 
 const Benefit: React.FC<BenefitProps> = ({ title, description, icon }) => {
   return (
-    <div className="flex flex-col items-center text-center p-6">
-      <div className="bg-primary/10 p-3 rounded-full mb-4">{icon}</div>
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
+    <div className="flex flex-col items-center text-center p-6 bg-[#0E0F0F] rounded-lg transition-transform duration-500 hover:scale-[1.03]">
+      <div className="bg-white/10 p-3 rounded-full mb-4 text-white">{icon}</div>
+      <h3 className="text-xl font-bold mb-2 text-white">{title}</h3>
+      <p className="text-gray-400">{description}</p>
     </div>
-  );
-};
+  )
+}
 
-const Benefits: React.FC = () => {
+export const Benefits: React.FC = () => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
-  });
+  })
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -46,7 +34,7 @@ const Benefits: React.FC = () => {
         staggerChildren: 0.2,
       },
     },
-  };
+  }
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -57,17 +45,16 @@ const Benefits: React.FC = () => {
         duration: 0.5,
       },
     },
-  };
+  }
 
   const benefits = [
     {
-      title: 'Professional Studio',
-      description:
-        'State-of-the-art recording equipment and acoustically treated rooms for pristine sound quality.',
+      title: "Professional Studio",
+      description: "State-of-the-art recording equipment and acoustically treated rooms for pristine sound quality.",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-primary"
+          className="h-6 w-6"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -82,13 +69,12 @@ const Benefits: React.FC = () => {
       ),
     },
     {
-      title: 'Industry Connections',
-      description:
-        'Direct access to our network of music professionals, distributors, and promotional channels.',
+      title: "Industry Connections",
+      description: "Direct access to our network of music professionals, distributors, and promotional channels.",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-primary"
+          className="h-6 w-6"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -103,13 +89,12 @@ const Benefits: React.FC = () => {
       ),
     },
     {
-      title: 'Creative Freedom',
-      description:
-        'Full artistic control over your music while benefiting from expert guidance when needed.',
+      title: "Creative Freedom",
+      description: "Full artistic control over your music while benefiting from expert guidance when needed.",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-primary"
+          className="h-6 w-6"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -123,46 +108,42 @@ const Benefits: React.FC = () => {
         </svg>
       ),
     },
-  ];
+  ]
 
   return (
-    <section className="py-16 bg-gray-50">
-      <Container>
+    <section className="py-16 bg-black">
+      <div className="container mx-auto px-4">
         <motion.div
           ref={ref}
           initial="hidden"
-          animate={inView ? 'visible' : 'hidden'}
+          animate={inView ? "visible" : "hidden"}
           variants={containerVariants}
           className="text-center mb-12"
         >
-          <motion.h2 variants={itemVariants} className="text-3xl font-bold mb-4">
+          <motion.h2 variants={itemVariants} className="text-3xl font-bold mb-4 text-white">
             Why Choose Our Label
           </motion.h2>
-          <motion.p variants={itemVariants} className="text-gray-600 max-w-2xl mx-auto">
-            We offer more than just production - we provide a complete ecosystem for artists to
-            thrive and connect with their audience.
+          <motion.p variants={itemVariants} className="text-gray-400 max-w-2xl mx-auto">
+            We offer more than just production - we provide a complete ecosystem for artists to thrive and connect with
+            their audience.
           </motion.p>
         </motion.div>
 
         <motion.div
           variants={containerVariants}
           initial="hidden"
-          animate={inView ? 'visible' : 'hidden'}
+          animate={inView ? "visible" : "hidden"}
           className="grid grid-cols-1 md:grid-cols-3 gap-8"
         >
           {benefits.map((benefit, index) => (
             <motion.div key={index} variants={itemVariants}>
-              <Benefit
-                title={benefit.title}
-                description={benefit.description}
-                icon={benefit.icon}
-              />
+              <Benefit title={benefit.title} description={benefit.description} icon={benefit.icon} />
             </motion.div>
           ))}
         </motion.div>
-      </Container>
+      </div>
     </section>
-  );
-};
+  )
+}
 
-export default Benefits;
+export default Benefits

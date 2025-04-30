@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import React, { useState, useEffect, useCallback } from 'react';
 
 // Components
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 import { BlogList, BlogPostWithAuthor } from '@/components/blog/components/BlogList';
 import { Hero } from '@/components/blog/components/Hero';
 import { Sidebar } from '@/components/blog/components/Sidebar';
@@ -133,6 +135,7 @@ export default function BlogPage({ initialPosts, categories, featuredPosts }: Bl
         <link rel="canonical" href={`${SITE_URL}/blog`} />
       </Head>
 
+      <Header />
       <main>
         {/* Hero Section */}
         <Hero
@@ -229,6 +232,7 @@ export default function BlogPage({ initialPosts, categories, featuredPosts }: Bl
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 }

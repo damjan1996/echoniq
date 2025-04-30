@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import React from 'react';
 
 // Components
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { SectionTitle } from '@/components/common/section-title';
 // Lib and utils
@@ -165,6 +167,7 @@ export default function ArtistsPage({ initialArtists, genres }: ArtistsPageProps
         <link rel="canonical" href={`${SITE_URL}/artists`} />
       </Head>
 
+      <Header />
       <main>
         {/* Hero Section */}
         <Hero
@@ -230,6 +233,7 @@ export default function ArtistsPage({ initialArtists, genres }: ArtistsPageProps
           />
         </div>
       </main>
+      <Footer />
     </>
   );
 }

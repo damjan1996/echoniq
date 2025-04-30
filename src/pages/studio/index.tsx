@@ -2,8 +2,8 @@ import { NextPage } from 'next';
 import React, { useRef } from 'react';
 
 import { SEO } from '@/components/common/seo';
-import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 import { BookingForm } from '@/components/studio/BookingForm';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
@@ -12,8 +12,6 @@ import { Hero, Services, Equipment, Pricing } from '../../components/studio/comp
 
 const StudioPage: NextPage = () => {
   const bookingRef = useRef<HTMLDivElement>(null);
-
-  // Removed unused function scrollToBooking and replaced with inline usage where needed
 
   return (
     <>

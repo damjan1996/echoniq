@@ -221,83 +221,83 @@ pages/
 │   │   ├── FeaturedArtists.tsx
 │   │   ├── CTAForm.tsx
 │   │   ├── Hero.tsx
-│   │   ├── index.page.tsx
+│   │   ├── index.tsx
 │   │   ├── LatestReleases.tsx
 │   │   └── StudioIntro.tsx
-│   └── index.page.tsx
+│   └── index.tsx
 ├── artists/               # Künstlerseiten
 │   ├── components/
 │   │   ├── ArtistList.tsx
 │   │   ├── Categories.tsx
 │   │   ├── Hero.tsx
-│   │   ├── index.page.tsx
+│   │   ├── index.tsx
 │   │   └── Filters.tsx
 │   ├── [slug]/            # Dynamische Künstlerseiten
-│   │   └── index.page.tsx
-│   └── index.page.tsx
+│   │   └── index.tsx
+│   └── index.tsx
 ├── music/                 # Musikseiten
 │   ├── components/
 │   │   ├── ReleaseList.tsx
 │   │   ├── Genres.tsx
 │   │   ├── Hero.tsx
-│   │   ├── index.page.tsx
+│   │   ├── index.tsx
 │   │   └── Filters.tsx
 │   ├── [slug]/            # Dynamische Release-Seiten
-│   │   └── index.page.tsx
-│   └── index.page.tsx
+│   │   └── index.tsx
+│   └── index.tsx
 ├── studio/                # Studioseiten
 │   ├── components/
 │   │   ├── Equipment.tsx
 │   │   ├── Hero.tsx
-│   │   ├── index.page.tsx
+│   │   ├── index.tsx
 │   │   ├── Pricing.tsx
 │   │   └── Services.tsx
-│   └── index.page.tsx
+│   └── index.tsx
 ├── blog/                  # Blogseiten
 │   ├── components/
 │   │   ├── BlogList.tsx
 │   │   ├── Categories.tsx
 │   │   ├── Hero.tsx
-│   │   ├── index.page.tsx
+│   │   ├── index.tsx
 │   │   ├── Pagination.tsx
 │   │   ├── PostCard.tsx
 │   │   ├── Search.tsx
 │   │   └── Sidebar.tsx
 │   ├── [slug]/            # Dynamische Blog-Post-Seiten
-│   │   └── index.page.tsx
+│   │   └── index.tsx
 │   ├── post/              # Blog-Post-Komponenten
-│   │   ├── index.page.tsx
+│   │   ├── index.tsx
 │   │   ├── PostComments.tsx
 │   │   ├── PostContent.tsx
 │   │   ├── PostHeader.tsx
 │   │   ├── PostSidebar.tsx
 │   │   └── RelatedPosts.tsx
-│   └── index.page.tsx
+│   └── index.tsx
 ├── kontakt/               # Kontaktseite
 │   ├── components/
 │   │   ├── Hero.tsx
-│   │   ├── index.page.tsx
+│   │   ├── index.tsx
 │   │   ├── ContactForm.tsx
 │   │   └── StudioLocation.tsx
-│   └── index.page.tsx
+│   └── index.tsx
 ├── ueber-uns/             # Über-uns-Seite
 │   ├── components/
 │   │   ├── LabelHistory.tsx
 │   │   ├── Hero.tsx
-│   │   ├── index.page.tsx
+│   │   ├── index.tsx
 │   │   ├── Mission.tsx
 │   │   ├── TeamMembers.tsx
 │   │   └── Vision.tsx
-│   └── index.page.tsx
+│   └── index.tsx
 ├── datenschutz/           # Datenschutzseite
-│   └── index.page.tsx
+│   └── index.tsx
 ├── impressum/             # Impressumsseite
-│   └── index.page.tsx
+│   └── index.tsx
 ├── 404.tsx                # 404-Fehlerseite
 ├── 500.tsx                # 500-Fehlerseite
 ├── _app.tsx               # Next.js App-Komponente
 ├── _document.tsx          # Next.js Document-Komponente
-└── index.page.tsx              # Hauptindex-Seite (Redirect zu /home)
+└── index.tsx              # Hauptindex-Seite (Redirect zu /home)
 ```
 
 #### `styles/`

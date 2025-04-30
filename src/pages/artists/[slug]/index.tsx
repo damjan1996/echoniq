@@ -8,6 +8,8 @@ import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
 // Components
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 import { ArtistBio } from '@/components/artists/ArtistBio';
 import { ArtistReleases } from '@/components/artists/ArtistReleases';
 import CTA from '@/components/common/cta-button';
@@ -38,14 +40,14 @@ interface SimpleStreamingLinksProps {
 }
 
 const SimpleStreamingLinks: React.FC<SimpleStreamingLinksProps> = ({
-  spotify,
-  appleMusic,
-  soundcloud,
-  bandcamp,
-  beatport,
-  youtube,
-  className,
-}) => {
+                                                                     spotify,
+                                                                     appleMusic,
+                                                                     soundcloud,
+                                                                     bandcamp,
+                                                                     beatport,
+                                                                     youtube,
+                                                                     className,
+                                                                   }) => {
   // Define links in an array for easier mapping
   const links = [
     {
@@ -227,6 +229,7 @@ export default function ArtistDetailPage({ artist }: ArtistDetailPageProps) {
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
 
+      <Header />
       <main className="bg-black text-white">
         {/* Hero Banner */}
         <div className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden">
@@ -376,6 +379,7 @@ export default function ArtistDetailPage({ artist }: ArtistDetailPageProps) {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 }

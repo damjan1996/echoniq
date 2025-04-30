@@ -2,8 +2,8 @@ import { NextPage } from 'next';
 import React from 'react';
 
 import { SEO } from '@/components/common/seo';
-import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 import { Container } from '@/components/ui/container';
 
 const DatenschutzPage: NextPage = () => {

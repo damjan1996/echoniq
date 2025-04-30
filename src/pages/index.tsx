@@ -3,8 +3,6 @@ import type { NextPage } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
-// Replace the import with a local implementation
-// import { SEO } from '@/components/common';
 
 // Interface for SEO component props
 interface SEOProps {

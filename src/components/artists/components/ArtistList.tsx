@@ -1,31 +1,32 @@
-import { motion } from 'framer-motion';
-import React from 'react';
+"use client"
 
-import { ArtistCard } from '@/components/artists/ArtistCard';
-import { LoadingSpinner } from '@/components/common/loading-spinner';
+import { motion } from "framer-motion"
+import type React from "react"
+
+import { ArtistCard } from "@/components/artists/ArtistCard"
 
 interface Artist {
-  id: string;
-  name: string;
-  slug: string;
-  profile_image?: string | null;
-  genre?: string | null;
-  is_featured?: boolean;
+  id: string
+  name: string
+  slug: string
+  profile_image?: string | null
+  genre?: string | null
+  is_featured?: boolean
 }
 
 interface ArtistListProps {
-  artists: Artist[];
-  isLoading?: boolean;
-  error?: string | null;
-  emptyMessage?: string;
+  artists: Artist[]
+  isLoading?: boolean
+  error?: string | null
+  emptyMessage?: string
 }
 
 export const ArtistList: React.FC<ArtistListProps> = ({
-  artists,
-  isLoading = false,
-  error = null,
-  emptyMessage = 'No artists found',
-}) => {
+                                                        artists,
+                                                        isLoading = false,
+                                                        error = null,
+                                                        emptyMessage = "No artists found",
+                                                      }) => {
   // Animation variants for list container
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -35,7 +36,7 @@ export const ArtistList: React.FC<ArtistListProps> = ({
         staggerChildren: 0.1,
       },
     },
-  };
+  }
 
   // Animation variants for individual items
   const itemVariants = {
@@ -45,36 +46,36 @@ export const ArtistList: React.FC<ArtistListProps> = ({
       y: 0,
       transition: { duration: 0.5 },
     },
-  };
+  }
 
   // Handle loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-16">
-        <LoadingSpinner size="lg" />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
       </div>
-    );
+    )
   }
 
   // Handle error state
   if (error) {
     return (
       <div className="py-16 text-center">
-        <div className="bg-red-100 text-red-700 p-4 rounded-lg inline-block">
-          <p className="font-medium">Error loading artists</p>
-          <p className="text-sm mt-1">{error}</p>
+        <div className="bg-red-500/20 border border-red-500 p-4 rounded-lg inline-block">
+          <p className="font-medium text-red-400">Error loading artists</p>
+          <p className="text-sm mt-1 text-red-300">{error}</p>
         </div>
       </div>
-    );
+    )
   }
 
   // Handle empty state
   if (!artists || artists.length === 0) {
     return (
       <div className="py-16 text-center">
-        <p className="text-gray-500 dark:text-gray-400">{emptyMessage}</p>
+        <p className="text-gray-400">{emptyMessage}</p>
       </div>
-    );
+    )
   }
 
   // Render the artist grid
@@ -99,18 +100,18 @@ export const ArtistList: React.FC<ArtistListProps> = ({
         </motion.div>
       ))}
     </motion.div>
-  );
-};
+  )
+}
 
 // Alternative layout for featured artists (e.g., for homepage)
 export const FeaturedArtistList: React.FC<ArtistListProps> = ({
-  artists,
-  isLoading = false,
-  error = null,
-  emptyMessage = 'No featured artists',
-}) => {
+                                                                artists,
+                                                                isLoading = false,
+                                                                error = null,
+                                                                emptyMessage = "No featured artists",
+                                                              }) => {
   // Only show featured artists
-  const featuredArtists = artists.filter((artist) => artist.is_featured);
+  const featuredArtists = artists.filter((artist) => artist.is_featured)
 
   // Animation settings for featured artists
   const containerVariants = {
@@ -121,42 +122,42 @@ export const FeaturedArtistList: React.FC<ArtistListProps> = ({
         staggerChildren: 0.2,
       },
     },
-  };
+  }
 
   const itemVariants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.7, ease: 'easeOut' },
+      transition: { duration: 0.7, ease: "easeOut" },
     },
-  };
+  }
 
   // Handle loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-16">
-        <LoadingSpinner size="lg" />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
       </div>
-    );
+    )
   }
 
   // Handle error state
   if (error) {
     return (
       <div className="py-8 text-center">
-        <p className="text-red-600">{error}</p>
+        <p className="text-red-400">{error}</p>
       </div>
-    );
+    )
   }
 
   // Handle empty state
   if (!featuredArtists || featuredArtists.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-gray-500 dark:text-gray-400">{emptyMessage}</p>
+        <p className="text-gray-400">{emptyMessage}</p>
       </div>
-    );
+    )
   }
 
   // Render featured artists in a more prominent layout
@@ -182,7 +183,7 @@ export const FeaturedArtistList: React.FC<ArtistListProps> = ({
         </motion.div>
       ))}
     </motion.div>
-  );
-};
+  )
+}
 
-export default ArtistList;
+export default ArtistList

@@ -1,147 +1,57 @@
-// src/pages/home/components/CTAForm.tsx
-import { motion } from 'framer-motion';
-import React, { useState, ReactNode, useCallback } from 'react';
-import { useInView } from 'react-intersection-observer';
+"use client"
 
-import { useForm } from '@/hooks/use-form';
+import type React from "react"
 
-// Interface for Container props
-interface ContainerProps {
-  children: ReactNode;
-  className?: string;
-  [key: string]: unknown;
-}
-
-// Simple Container component implementation
-const Container: React.FC<ContainerProps> = ({ children, className = '', ...props }) => (
-  <div className={`container mx-auto px-4 ${className}`} {...props}>
-    {children}
-  </div>
-);
-
-// Interface for Button props
-interface ButtonProps {
-  children: ReactNode;
-  className?: string;
-  variant?: 'primary' | 'secondary' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
-  type?: 'button' | 'submit' | 'reset';
-  disabled?: boolean;
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  [key: string]: unknown;
-}
-
-// Simple Button component implementation
-const Button: React.FC<ButtonProps> = ({
-  children,
-  className = '',
-  variant = 'primary',
-  size = 'md',
-  type = 'button',
-  disabled = false,
-  ...props
-}) => {
-  const baseClasses =
-    'font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
-
-  const variantClasses = {
-    primary: 'bg-primary hover:bg-primary-dark text-white focus:ring-primary',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-900 focus:ring-gray-400',
-    outline: 'bg-transparent border border-gray-300 hover:bg-gray-100 focus:ring-gray-400',
-  };
-
-  const sizeClasses = {
-    sm: 'py-1 px-3 text-sm',
-    md: 'py-2 px-4 text-base',
-    lg: 'py-3 px-6 text-lg',
-  };
-
-  return (
-    <button
-      type={type}
-      disabled={disabled}
-      className={`
-        ${baseClasses}
-        ${variantClasses[variant] || variantClasses.primary}
-        ${sizeClasses[size] || sizeClasses.md}
-        ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
-        ${className}
-      `}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-// Type definition for form data that explicitly satisfies Record<string, unknown>
-interface FormData extends Record<string, unknown> {
-  email: string;
-  name: string;
-  message: string;
-  type: string;
-}
+import { useState } from "react"
+import { motion } from "framer-motion"
+import { useInView } from "react-intersection-observer"
 
 export const CTAForm: React.FC = () => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
-  });
+  })
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+    type: "newsletter",
+  })
 
-  // Use our improved form hook - removed unused 'values' from destructuring
-  const { register, handleSubmit, formState, reset } = useForm<FormData>({
-    defaultValues: {
-      email: '',
-      name: '',
-      message: '',
-      type: 'newsletter',
-    },
-    validationRules: {
-      email: { required: true, pattern: /^\S+@\S+\.\S+$/ },
-      name: { required: true },
-      message: { required: false },
-      type: { required: true },
-    },
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const errors = formState.errors || {};
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
 
-  // Handle form submission
-  const onSubmit = useCallback(async () => {
-    setIsSubmitting(true);
-    setError(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setError(null)
 
     try {
-      // In a real application, this would be an API call
-      // const response = await fetch('/api/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.error || 'Fehler beim Absenden des Formulars');
-      // }
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setIsSuccess(true);
-      reset();
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      setIsSuccess(true)
+      setFormData({
+        name: "",
+        email: "",
+        message: "",
+        type: "newsletter",
+      })
 
       // Reset success message after 5 seconds
-      setTimeout(() => setIsSuccess(false), 5000);
+      setTimeout(() => setIsSuccess(false), 5000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ein unbekannter Fehler ist aufgetreten');
+      setError("Ein Fehler ist aufgetreten. Bitte versuche es später erneut.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  }, [reset]);
+  }
 
   const containerVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -153,7 +63,7 @@ export const CTAForm: React.FC = () => {
         staggerChildren: 0.1,
       },
     },
-  };
+  }
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -162,42 +72,30 @@ export const CTAForm: React.FC = () => {
       y: 0,
       transition: { duration: 0.4 },
     },
-  };
-
-  // Hilfsfunktion, um Formularfeld-Attribute korrekt zu typisieren
-  const registerField = (name: keyof FormData) => {
-    const field = register(name);
-    return {
-      name: field.name as string,
-      value: field.value as string,
-      onChange: field.onChange,
-      onBlur: field.onBlur,
-    };
-  };
+  }
 
   return (
-    <section className="py-20 bg-gray-900 text-white">
-      <Container>
+    <section className="py-20 bg-black">
+      <div className="container mx-auto px-4">
         <motion.div
           ref={ref}
           variants={containerVariants}
           initial="hidden"
-          animate={inView ? 'visible' : 'hidden'}
-          className="max-w-3xl mx-auto text-center"
+          animate={inView ? "visible" : "hidden"}
+          className="max-w-3xl mx-auto"
         >
-          <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold mb-4">
+          <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold mb-4 text-center">
             Bleib in Kontakt
           </motion.h2>
 
-          <motion.p variants={itemVariants} className="text-gray-300 mb-8">
-            Abonniere unseren Newsletter für Updates zu neuen Releases, Events und exklusiven
-            Angeboten.
+          <motion.p variants={itemVariants} className="text-gray-300 mb-8 text-center">
+            Abonniere unseren Newsletter für Updates zu neuen Releases, Events und exklusiven Angeboten.
           </motion.p>
 
           <motion.form
             variants={itemVariants}
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4 text-left"
+            onSubmit={handleSubmit}
+            className="space-y-4 bg-[#0E0F0F] p-6 rounded-lg"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -207,15 +105,13 @@ export const CTAForm: React.FC = () => {
                 <input
                   type="text"
                   id="name"
-                  {...registerField('name')}
-                  className={`w-full px-4 py-2 bg-gray-800 border ${
-                    errors.name ? 'border-red-500' : 'border-gray-700'
-                  } rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary`}
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors"
                   placeholder="Dein Name"
                 />
-                {errors.name && (
-                  <p className="mt-1 text-xs text-red-500">Bitte gib deinen Namen ein</p>
-                )}
               </div>
 
               <div>
@@ -225,17 +121,13 @@ export const CTAForm: React.FC = () => {
                 <input
                   type="email"
                   id="email"
-                  {...registerField('email')}
-                  className={`w-full px-4 py-2 bg-gray-800 border ${
-                    errors.email ? 'border-red-500' : 'border-gray-700'
-                  } rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary`}
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors"
                   placeholder="deine@email.de"
                 />
-                {errors.email && (
-                  <p className="mt-1 text-xs text-red-500">
-                    Bitte gib eine gültige E-Mail-Adresse ein
-                  </p>
-                )}
               </div>
             </div>
 
@@ -245,29 +137,27 @@ export const CTAForm: React.FC = () => {
               </label>
               <textarea
                 id="message"
-                {...registerField('message')}
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
                 rows={4}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                className="w-full px-4 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors resize-none"
                 placeholder="Deine Nachricht an uns..."
               />
             </div>
 
             <div>
-              <span className="block text-sm font-medium text-gray-300 mb-1">
-                Ich interessiere mich für:
-              </span>
+              <span className="block text-sm font-medium text-gray-300 mb-1">Ich interessiere mich für:</span>
               <div className="flex flex-wrap gap-4">
-                <label
-                  htmlFor="type-newsletter"
-                  className="flex items-center space-x-2 cursor-pointer"
-                >
+                <label htmlFor="type-newsletter" className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
                     id="type-newsletter"
-                    {...registerField('type')}
+                    name="type"
                     value="newsletter"
-                    defaultChecked
-                    className="text-primary focus:ring-primary"
+                    checked={formData.type === "newsletter"}
+                    onChange={handleChange}
+                    className="text-white focus:ring-white"
                   />
                   <span>Newsletter</span>
                 </label>
@@ -276,9 +166,11 @@ export const CTAForm: React.FC = () => {
                   <input
                     type="radio"
                     id="type-artist"
-                    {...registerField('type')}
+                    name="type"
                     value="artist"
-                    className="text-primary focus:ring-primary"
+                    checked={formData.type === "artist"}
+                    onChange={handleChange}
+                    className="text-white focus:ring-white"
                   />
                   <span>Als Künstler bewerben</span>
                 </label>
@@ -287,9 +179,11 @@ export const CTAForm: React.FC = () => {
                   <input
                     type="radio"
                     id="type-studio"
-                    {...registerField('type')}
+                    name="type"
                     value="studio"
-                    className="text-primary focus:ring-primary"
+                    checked={formData.type === "studio"}
+                    onChange={handleChange}
+                    className="text-white focus:ring-white"
                   />
                   <span>Studioanfrage</span>
                 </label>
@@ -297,9 +191,7 @@ export const CTAForm: React.FC = () => {
             </div>
 
             {error && (
-              <div className="p-3 bg-red-500/20 border border-red-500 rounded-md text-red-400 text-sm">
-                {error}
-              </div>
+              <div className="p-3 bg-red-500/20 border border-red-500 rounded-md text-red-400 text-sm">{error}</div>
             )}
 
             {isSuccess && (
@@ -309,21 +201,21 @@ export const CTAForm: React.FC = () => {
             )}
 
             <div className="pt-2">
-              <Button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
                 disabled={isSubmitting}
+                className="w-full py-3 bg-white text-black font-medium rounded-md hover:bg-gray-200 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Wird gesendet...' : 'Absenden'}
-              </Button>
+                {isSubmitting ? "Wird gesendet..." : "Absenden"}
+              </motion.button>
             </div>
           </motion.form>
         </motion.div>
-      </Container>
+      </div>
     </section>
-  );
-};
+  )
+}
 
-export default CTAForm;
+export default CTAForm

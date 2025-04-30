@@ -1,65 +1,43 @@
+'use client';
+
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X, Search } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-import { mainNavigation, quickActions } from '@/config/menu';
-import { useMediaQuery } from '@/hooks/use-media-query';
-import { useScroll } from '@/hooks/use-scroll';
+// Navigation Links
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/artists', label: 'Künstler' },
+  { href: '/releases', label: 'Releases' },
+  { href: '/studio', label: 'Studio' },
+  { href: '/about', label: 'Über uns' },
+  { href: '/contact', label: 'Kontakt' },
+];
 
-import { Logo } from './logo';
-import { MegaMenu } from './mega-menu';
-import { MobileNavigation } from './mobile-navigation';
-import { Navigation } from './navigation';
-
-export const Header: React.FC = () => {
+export function Header() {
   const router = useRouter();
-  const { scroll } = useScroll();
-  const isMobile = useMediaQuery('(max-width: 1023px)');
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
-  const [isHeaderFixed, setIsHeaderFixed] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Toggle mobile menu
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-    // Close mega menu when mobile menu is toggled
-    if (activeMegaMenu) setActiveMegaMenu(null);
-  };
-
-  // Toggle mega menu
-  const toggleMegaMenu = (id: string) => {
-    if (isMobile) return;
-
-    if (activeMegaMenu === id) {
-      setActiveMegaMenu(null);
-    } else {
-      setActiveMegaMenu(id);
-    }
-  };
-
-  // Close mega menu when clicking outside
+  // Handle scroll event to change header style
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('.mega-menu') && !target.closest('.nav-item')) {
-        setActiveMegaMenu(null);
-      }
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
     };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close menus on route change
+  // Close mobile menu on route change
   useEffect(() => {
     const handleRouteChange = () => {
-      setIsMenuOpen(false);
-      setActiveMegaMenu(null);
+      setMobileMenuOpen(false);
       setSearchOpen(false);
     };
 
@@ -67,23 +45,9 @@ export const Header: React.FC = () => {
     return () => router.events.off('routeChangeStart', handleRouteChange);
   }, [router]);
 
-  // Handle scroll position to fix header
-  useEffect(() => {
-    let scrollPosition = 0;
-
-    if (scroll && typeof scroll === 'object' && 'y' in scroll) {
-      scrollPosition = Number(scroll.y);
-    } else if (typeof scroll === 'number') {
-      scrollPosition = scroll;
-    }
-
-    setIsHeaderFixed(scrollPosition > 50);
-  }, [scroll]);
-
   // Focus search input when opened
   useEffect(() => {
     if (searchOpen && searchInputRef.current) {
-      // Small delay to ensure the element is in the DOM
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 50);
@@ -100,9 +64,59 @@ export const Header: React.FC = () => {
   };
 
   // Animation variants
-  const headerVariants = {
-    initial: { opacity: 0, y: -20 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  const navVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: 'easeInOut',
+      },
+    },
+  };
+
+  const linkVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.3,
+      },
+    }),
+  };
+
+  const mobileMenuVariants = {
+    closed: {
+      opacity: 0,
+      x: '100%',
+      transition: {
+        duration: 0.3,
+        ease: 'easeInOut',
+      },
+    },
+    open: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.3,
+        ease: 'easeInOut',
+      },
+    },
+  };
+
+  const mobileLinkVariants = {
+    closed: { opacity: 0, x: 50 },
+    open: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.3,
+      },
+    }),
   };
 
   const searchVariants = {
@@ -114,120 +128,156 @@ export const Header: React.FC = () => {
   return (
     <>
       <motion.header
-        className={`py-4 w-full z-50 transition-all duration-300 ${
-          isHeaderFixed
-            ? 'fixed top-0 bg-background-primary/90 backdrop-blur-md shadow-md'
-            : 'absolute'
+        initial="hidden"
+        animate="visible"
+        variants={navVariants}
+        className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 transition-all duration-300 ${
+          isScrolled ? 'bg-black/90 backdrop-blur-md shadow-md' : 'bg-transparent'
         }`}
-        initial="initial"
-        animate="animate"
-        variants={headerVariants}
       >
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Logo variant="header" />
-            </div>
+        <div className="container mx-auto flex items-center justify-between">
+          <Link href="/" className="text-2xl font-bold tracking-tighter">
+            echoniq
+          </Link>
 
-            {/* Desktop navigation */}
-            <div className="hidden lg:block">
-              <Navigation
-                items={mainNavigation}
-                activeMegaMenu={activeMegaMenu}
-                toggleMegaMenu={toggleMegaMenu}
-              />
-            </div>
-
-            {/* Right side actions */}
-            <div className="flex items-center space-x-4">
-              {/* Search trigger */}
-              <button
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2 text-text-tertiary hover:text-text-primary transition-colors"
-                aria-label="Suche öffnen"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-
-              {/* Quick actions (desktop) */}
-              {!isMobile &&
-                quickActions.map((action) => (
-                  <a
-                    key={action.id}
-                    href={action.href}
-                    className={`px-4 py-2 rounded-full text-sm font-medium ${
-                      action.highlight
-                        ? 'bg-accent-500 hover:bg-accent-600 text-text-inverted'
-                        : 'bg-neutral-800 hover:bg-neutral-700 text-text-primary'
-                    } transition-colors`}
-                  >
-                    {action.label}
-                  </a>
-                ))}
-
-              {/* Mobile menu toggle */}
-              <button
-                onClick={toggleMenu}
-                className="lg:hidden p-2 text-text-tertiary hover:text-text-primary transition-colors"
-                aria-label={isMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
-                aria-expanded={isMenuOpen}
-              >
-                {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Search overlay */}
-          <AnimatePresence>
-            {searchOpen && (
-              <motion.div
-                className="absolute left-0 right-0 top-full mt-2 px-4"
-                variants={searchVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                <form
-                  onSubmit={handleSearchSubmit}
-                  className="container mx-auto p-4 bg-background-secondary rounded-lg shadow-lg"
+          <nav className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link, i) => (
+              <motion.div key={link.href} custom={i} variants={linkVariants}>
+                <Link
+                  href={link.href}
+                  className={`text-sm font-medium transition-colors relative group ${
+                    router.pathname === link.href ? 'text-white' : 'text-gray-300 hover:text-white'
+                  }`}
                 >
-                  <div className="flex items-center">
-                    <Search className="w-5 h-5 text-text-tertiary mr-3" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Künstler, Musik oder Blog durchsuchen..."
-                      className="flex-1 bg-transparent border-none text-text-primary placeholder-text-tertiary focus:outline-none"
-                      ref={searchInputRef}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setSearchOpen(false)}
-                      className="p-2 text-text-tertiary hover:text-text-primary transition-colors"
-                      aria-label="Suche schließen"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </form>
+                  {link.label}
+                  <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-white transition-all duration-300 group-hover:w-full"></span>
+                </Link>
               </motion.div>
-            )}
-          </AnimatePresence>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              className="p-2 text-gray-300 hover:text-white transition-colors"
+              aria-label="Suche öffnen"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="hidden md:block px-5 py-2 border border-white/20 rounded-full text-sm font-medium hover:bg-white/10 transition-colors"
+            >
+              Anmelden
+            </motion.button>
+
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden text-white focus:outline-none"
+              aria-label="Open menu"
+            >
+              <Menu size={24} />
+            </button>
+          </div>
         </div>
+
+        {/* Search overlay */}
+        <AnimatePresence>
+          {searchOpen && (
+            <motion.div
+              className="absolute left-0 right-0 top-full mt-2 px-4"
+              variants={searchVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <form
+                onSubmit={handleSearchSubmit}
+                className="container mx-auto p-4 bg-[#0E0F0F] rounded-lg shadow-lg"
+              >
+                <div className="flex items-center">
+                  <Search className="w-5 h-5 text-gray-400 mr-3" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Künstler, Musik oder Blog durchsuchen..."
+                    className="flex-1 bg-transparent border-none text-white placeholder-gray-400 focus:outline-none"
+                    ref={searchInputRef}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSearchOpen(false)}
+                    className="p-2 text-gray-400 hover:text-white transition-colors"
+                    aria-label="Suche schließen"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
 
       {/* Mobile navigation */}
-      <MobileNavigation isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial="closed"
+            animate="open"
+            exit="closed"
+            variants={mobileMenuVariants}
+            className="fixed inset-0 z-50 bg-black flex flex-col p-6 md:hidden"
+          >
+            <div className="flex justify-between items-center mb-10">
+              <Link href="/" className="text-2xl font-bold tracking-tighter">
+                echoniq
+              </Link>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-white focus:outline-none"
+                aria-label="Close menu"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
-      {/* Mega menu for desktop */}
-      <MegaMenu activeMenuId={activeMegaMenu} onClose={() => setActiveMegaMenu(null)} />
+            <nav className="flex flex-col space-y-6 mt-10">
+              {navLinks.map((link, i) => (
+                <motion.div key={link.href} custom={i} variants={mobileLinkVariants}>
+                  <Link
+                    href={link.href}
+                    className={`text-xl font-medium transition-colors ${
+                      router.pathname === link.href
+                        ? 'text-white'
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                </motion.div>
+              ))}
+            </nav>
+
+            <motion.button
+              variants={mobileLinkVariants}
+              custom={navLinks.length}
+              className="mt-auto mb-10 px-5 py-3 border border-white/20 rounded-full text-base font-medium hover:bg-white/10 transition-colors"
+            >
+              Anmelden
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Spacer for fixed header */}
-      {isHeaderFixed && <div className="h-20" />}
+      {isScrolled && <div className="h-20" />}
     </>
   );
-};
+}
 
 export default Header;

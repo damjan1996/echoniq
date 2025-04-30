@@ -1,70 +1,22 @@
-import { motion, useAnimation } from 'framer-motion';
+'use client';
+
+import { motion, useAnimation, useScroll, useTransform } from 'framer-motion';
+import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
-import React, { useEffect, ReactNode } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
-
-// Interface for Button props
-interface ButtonProps {
-  children: ReactNode;
-  className?: string;
-  variant?: 'primary' | 'secondary' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
-  type?: 'button' | 'submit' | 'reset';
-  disabled?: boolean;
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  [key: string]: unknown; // Better typing than 'any'
-}
-
-// Simple Button component implementation
-const Button: React.FC<ButtonProps> = ({
-  children,
-  className = '',
-  variant = 'primary',
-  size = 'md',
-  type = 'button',
-  disabled = false,
-  ...props
-}) => {
-  const baseClasses =
-    'font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
-
-  const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-900 focus:ring-gray-400',
-    outline:
-      'bg-transparent border border-gray-300 hover:bg-gray-100 text-white focus:ring-gray-400',
-  };
-
-  const sizeClasses = {
-    sm: 'py-1 px-3 text-sm',
-    md: 'py-2 px-4 text-base',
-    lg: 'py-3 px-6 text-lg',
-  };
-
-  return (
-    <button
-      type={type}
-      disabled={disabled}
-      className={`
-        ${baseClasses}
-        ${variantClasses[variant] || variantClasses.primary}
-        ${sizeClasses[size] || sizeClasses.md}
-        ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
-        ${className}
-      `}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
 
 export const Hero: React.FC = () => {
   const controls = useAnimation();
   const [ref, inView] = useInView({
     triggerOnce: true,
-    threshold: 0.2,
+    threshold: 0.1,
   });
+
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 500], [0, 150]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   useEffect(() => {
     if (inView) {
@@ -72,103 +24,102 @@ export const Hero: React.FC = () => {
     }
   }, [controls, inView]);
 
-  const container = {
+  const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        delayChildren: 0.3,
         staggerChildren: 0.2,
+        delayChildren: 0.3,
       },
     },
   };
 
-  const item = {
+  const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.5 },
+      transition: {
+        duration: 0.8,
+        ease: [0.25, 0.1, 0.25, 1.0],
+      },
     },
   };
 
   return (
-    <section className="relative min-h-screen bg-black text-white py-20 overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-900/70 to-black z-0"></div>
-
-      {/* Background video or image */}
-      <div className="absolute inset-0 z-0 opacity-30">
-        <div className="relative w-full h-full">
-          {/* Replace with your video or image */}
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black to-black z-10" />
+        <motion.div style={{ y, opacity }} className="h-full w-full">
           <Image
             src="/images/hero-bg.jpg"
             alt="Studio Background"
             fill
-            style={{ objectFit: 'cover' }}
-            quality={90}
             priority
+            className="object-cover opacity-40"
           />
-        </div>
+        </motion.div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col justify-center h-full pt-20">
+      {/* Content */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-20">
         <motion.div
           ref={ref}
-          variants={container}
+          variants={containerVariants}
           initial="hidden"
           animate={controls}
-          className="max-w-3xl"
+          className="max-w-4xl mx-auto"
         >
-          <motion.h1 variants={item} className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+          <motion.h1
+            variants={itemVariants}
+            className="text-5xl md:text-7xl font-bold leading-tight mb-6 text-center"
+          >
             Entdecke{' '}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
               echoniq
-            </span>{' '}
+            </span>
             <br />
             Dein Sound. Deine Vision.
           </motion.h1>
 
-          <motion.p variants={item} className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl">
+          <motion.p
+            variants={itemVariants}
+            className="text-xl md:text-2xl text-gray-300 mb-10 text-center max-w-2xl mx-auto"
+          >
             Ein Musiklabel, das Kreativität fördert, Künstler unterstützt und innovative Klangwelten
             erschafft.
           </motion.p>
 
-          <motion.div variants={item} className="flex flex-wrap gap-4">
-            <Button size="lg" variant="primary">
+          <motion.div variants={itemVariants} className="flex flex-wrap gap-4 justify-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-3 bg-white text-black font-medium rounded-full hover:bg-gray-200 transition-colors"
+            >
               Unsere Künstler
-            </Button>
-            <Button size="lg" variant="outline">
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-3 border border-white/30 font-medium rounded-full hover:bg-white/10 transition-colors"
+            >
               Studio buchen
-            </Button>
+            </motion.button>
           </motion.div>
         </motion.div>
       </div>
 
       {/* Scroll indicator */}
       <motion.div
-        className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
+        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10"
         animate={{ y: [0, 10, 0] }}
-        transition={{ repeat: Infinity, duration: 1.5 }}
+        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5 }}
       >
         <div className="flex flex-col items-center">
           <span className="text-sm text-gray-400 mb-2">Scroll</span>
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-white"
-          >
-            <path
-              d="M12 5V19M12 19L5 12M12 19L19 12"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <ArrowDown className="h-5 w-5 text-gray-400" />
         </div>
       </motion.div>
     </section>
